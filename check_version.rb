@@ -35,3 +35,4 @@ else
     File.open('version.json', 'w') { |file| file.write(JSON.pretty_generate({:bios => "0", :chipset => "0"})) }
     puts "Please enter your current versions in the newly made file \'version.json\'"
 end
+gets
