@@ -23,16 +23,15 @@ def checkForUpdates(toCheck)
         puts "Would you like to update the version file to the newest #{toCheck}? You can always do this manually later. (y/n)"
         if gets.chomp == 'y' then
             json[toCheck] = newest
-            File.open('version.json', 'w') { |file| file.write(JSON.dump(json)) }
+            File.open('version.json', 'w') { |file| file.write(JSON.pretty_generate(json)) }
         end
     else puts "You have the latest #{toCheck}." end
-
 end
 
 if File.exist?('version.json') then
     checkForUpdates('bios')
     checkForUpdates('chipset')
 else
-    File.open('version.json', 'w') { |file| file.write(JSON.generate({:bios => "0", :chipset => "0"})) }
+    File.open('version.json', 'w') { |file| file.write(JSON.pretty_generate({:bios => "0", :chipset => "0"})) }
     puts "Please enter your current versions in the newly made file \'version.json\'"
 end
