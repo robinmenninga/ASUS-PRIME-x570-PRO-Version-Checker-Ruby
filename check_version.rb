@@ -12,15 +12,15 @@ def checkForUpdates(toCheck)
         option = 0
         current = %x(wmic bios get name).tr("Name \n", '')
     else
-        puts 'Wrong parameter, choose between \'bios\' and \'chipset\''
+        puts 'Wrong parameter, choose between \'bios\' and \'chipset\'.'
     end
     
     link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu=&osid=45'
     newest = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][option]['Files'][0]['Version']
     if current.tr('.', '') < newest.tr('.', '') then
         puts "There is a newer #{toCheck} available!"
-        puts "Current #{toCheck} version: #{current}"
-        puts "Newest #{toCheck} version: #{newest}"
+        puts "Current #{toCheck} version: #{current}."
+        puts "Newest #{toCheck} version: #{newest}."
         true
     else
         puts "You have the latest #{toCheck}."
