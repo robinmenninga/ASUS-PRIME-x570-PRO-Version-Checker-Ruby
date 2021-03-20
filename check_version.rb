@@ -7,7 +7,12 @@ def checkForUpdates(toCheck)
     case toCheck
     when 'chipset'
         option = 2
-        current = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version).tr("Version \n", '')
+        if File.exist?('C:/AMD/Chipset_Driver_Installer/AMD_Chipset_Software.exe') then
+            current = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version).tr("Version \n", '')
+        else
+            puts 'Chipset software exe file not found, skipping chipset version check.'
+            return
+        end
     when 'bios'
         option = 0
         current = %x(wmic bios get name).tr("Name \n", '')
