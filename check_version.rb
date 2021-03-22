@@ -16,6 +16,10 @@ def checkForUpdates(toCheck)
     when 'bios'
         option = 0
         current = %x(wmic bios get name).tr("Name \n", '')
+		unless current =~ /\d/ then
+			puts 'Cannot find version number, either the website is down or something is wrong with the script.'
+			return
+		end
     else
         puts 'Wrong parameter, choose between \'bios\' and \'chipset\'.'
     end
