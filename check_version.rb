@@ -1,5 +1,4 @@
 require 'httparty'
-require 'json'
 require 'launchy'
 
 
@@ -16,7 +15,7 @@ def checkForUpdates(toCheck)
     when 'bios'
         option = 0
         current = %x(wmic bios get name).tr("Name \n", '')
-		unless current =~ /\d/ then
+		unless current =~ /\d/ 
 			puts 'Cannot find version number, either the website is down or something is wrong with the script.'
 			return
 		end
@@ -26,7 +25,7 @@ def checkForUpdates(toCheck)
     
     link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu=&osid=45'
     newest = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][option]['Files'][0]['Version']
-    if current.tr('.', '') < newest.tr('.', '') then
+    if current.tr('.', '') < newest.tr('.', '') 
         puts "There is a newer #{toCheck} available!"
         puts "Current #{toCheck} version: #{current}."
         puts "Newest #{toCheck} version: #{newest}."
@@ -36,9 +35,12 @@ def checkForUpdates(toCheck)
     end
 end
 
-if checkForUpdates('bios') or checkForUpdates('chipset') then
+bios = checkForUpdates('bios')
+chipset = checkForUpdates('chipset')
+
+if bios or chipset
     puts 'Would you like to open your webbrowser to the update page? (y/n)'
-    if gets.chomp == 'y' then
+    if gets.chomp == 'y' 
         Launchy.open("https://www.asus.com/us/Motherboards-Components/Motherboards/All-series/PRIME-X570-PRO/HelpDesk_Download/")
     end
 end
