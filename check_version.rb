@@ -29,9 +29,11 @@ def checkForUpdates(toCheck)
         puts "There is a newer #{toCheck} available!"
         puts "Current #{toCheck} version: #{current}."
         puts "Newest #{toCheck} version: #{newest}."
+		puts "\n"
         true
     else
         puts "You have the latest #{toCheck}."
+		puts "\n"
     end
 end
 
@@ -39,8 +41,9 @@ bios = checkForUpdates('bios')
 chipset = checkForUpdates('chipset')
 
 if bios or chipset
-    puts 'Would you like to open your webbrowser to the update page? (y/n)'
-    if gets.chomp == 'y' 
+    puts 'Would you like to open your webbrowser to the update page? (Y/n)'
+	answer = gets.chomp
+    if answer == 'y' or answer == ''
         Launchy.open("https://www.asus.com/us/Motherboards-Components/Motherboards/All-series/PRIME-X570-PRO/HelpDesk_Download/")
     end
 end
