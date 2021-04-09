@@ -16,7 +16,7 @@ def checkForUpdates(toCheck)
         option = 0
         current = %x(wmic bios get name).tr("Name \n", '')
 		unless current =~ /\d/ 
-			puts 'Cannot find version number, either the website is down or something is wrong with the script.'
+			puts 'Cannot find current version.'
 			return
 		end
     else
@@ -25,15 +25,25 @@ def checkForUpdates(toCheck)
     
     link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu=&osid=45'
     newest = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][option]['Files'][0]['Version']
+    unless newest =~ /\d/
+        puts "Cannot find newest #{toCheck} version."
+        return
+    end
+    is_release = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][option]['Files'][0]['IsRelease']
+    puts "\t- #{toCheck.upcase} -"
     if current.tr('.', '') < newest.tr('.', '') 
         puts "There is a newer #{toCheck} available!"
         puts "Current #{toCheck} version: #{current}."
         puts "Newest #{toCheck} version: #{newest}."
+        puts "\n"
+        if (is_release == '0')
+            puts "Warning! This is a beta version."
+        end
 		puts "\n"
         true
     else
         puts "You have the latest #{toCheck}."
-		puts "\n"
+		puts "\n\n"
     end
 end
 
