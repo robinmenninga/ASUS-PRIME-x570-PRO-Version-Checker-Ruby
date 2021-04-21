@@ -5,7 +5,8 @@ require 'launchy'
 def checkForUpdates(toCheck)
     case toCheck
     when 'chipset'
-        option = 2
+        option = 1
+        link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu=&osid=45'
         if File.exist?('C:/AMD/Chipset_Driver_Installer/AMD_Chipset_Software.exe') then
             current = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version).tr("Version \n", '')
         else
@@ -14,6 +15,7 @@ def checkForUpdates(toCheck)
         end
     when 'bios'
         option = 0
+        link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu='
         current = %x(wmic bios get name).tr("Name \n", '')
 		unless current =~ /\d/ 
 			puts 'Cannot find current version.'
@@ -23,7 +25,6 @@ def checkForUpdates(toCheck)
         puts 'Wrong parameter, choose between \'bios\' and \'chipset\'.'
     end
     
-    link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu=&osid=45'
     newest = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][option]['Files'][0]['Version']
     unless newest =~ /\d/
         puts "Cannot find newest #{toCheck} version."
