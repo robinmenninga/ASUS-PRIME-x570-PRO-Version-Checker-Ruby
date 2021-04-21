@@ -6,7 +6,7 @@ def checkForUpdates(toCheck)
     case toCheck
     when 'chipset'
         option = 1
-        link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu=&osid=45'
+        link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
         if File.exist?('C:/AMD/Chipset_Driver_Installer/AMD_Chipset_Software.exe') then
             current = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version).tr("Version \n", '')
         else
@@ -15,7 +15,7 @@ def checkForUpdates(toCheck)
         end
     when 'bios'
         option = 0
-        link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&cpu='
+        link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
         current = %x(wmic bios get name).tr("Name \n", '')
 		unless current =~ /\d/ 
 			puts 'Cannot find current version.'
