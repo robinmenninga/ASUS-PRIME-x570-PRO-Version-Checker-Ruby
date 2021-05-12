@@ -1,7 +1,7 @@
-# ASUS-PRIME-x570-PRO-bios-and-chipset-check
+# ASUS PRIME x570 PRO Version Checker
 Script that checks if you have the latest PRIME x570-PRO bios, audio driver and chipset, made in ruby.
 
-Currently only works on Windows.
+Only works on Windows.
 
 # Gem requirements
 - httparty
