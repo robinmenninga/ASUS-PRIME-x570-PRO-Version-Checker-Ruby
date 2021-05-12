@@ -77,9 +77,7 @@ def checkForUpdates(toCheck)
         puts "Current #{toCheck} version: #{current}."
         puts "Newest #{toCheck} version: #{newest}."
         puts "\n"
-        unless (isRelease)
-            puts "Warning! This is a beta version."
-        end
+        puts "Warning! This is a beta version." unless isRelease
 		puts "\n"
         return true
     else
