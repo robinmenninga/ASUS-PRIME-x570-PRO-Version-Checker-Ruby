@@ -36,8 +36,10 @@ def getNewestVersion(toCheck)
 end
 
 def isRelease(toCheck)
+    link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
     case toCheck
     when 'bios'
+        link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
         is_release = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
     when 'chipset'
         is_release = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][1]['Files'][0]['IsRelease']
@@ -74,8 +76,8 @@ def checkForUpdates(toCheck)
     
     if current.tr('.', '') < newest.tr('.', '') 
         puts "There is a newer #{toCheck} available!"
-        puts "Current #{toCheck} version: #{current}."
-        puts "Newest #{toCheck} version: #{newest}."
+        puts "Current #{toCheck} version: #{current}"
+        puts "Newest #{toCheck} version: #{newest}"
         puts "\n"
         puts "Warning! This is a beta version." unless isRelease(toCheck)
 		puts "\n"
