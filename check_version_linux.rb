@@ -14,8 +14,12 @@ end
 
 def getNewestVersion(toCheck)
 	link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
-	newest = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][0]['Files'][0]['Version']
-
+	begin
+		newest = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][0]['Files'][0]['Version']
+	rescue => err
+		puts "An error occured: (#{err.class}: #{err.message})"
+		return -1
+	end
     return newest if newest =~ /\d/
 
     puts "Newest #{toCheck} version not found, skipping...\n\n"
