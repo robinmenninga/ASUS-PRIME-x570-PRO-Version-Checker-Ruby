@@ -11,7 +11,7 @@ Linux version only checks the bios version.
 - dmidecode
 
 # Usage
-Start by installing all the dependencies. This is done by running the command 'bundler install'.
+Start by installing all the dependencies. This is done by running the command 'bundler install'. (And when on linux, install the dependencies with your favorite package manager.)
 
 On Windows, simply execute the provided bat file. You can also open command prompt and execute the command 'ruby check_version.rb' from there (which is what the bat file does).
 
