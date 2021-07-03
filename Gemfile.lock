@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     httparty (0.18.1)
       mime-types (~> 3.0)
@@ -15,12 +15,12 @@ GEM
     public_suffix (4.0.6)
 
 PLATFORMS
-  x64-mingw32
   ruby
+  x64-mingw32
 
 DEPENDENCIES
   httparty
   launchy
 
 BUNDLED WITH
-   2.2.18
+   2.2.21
