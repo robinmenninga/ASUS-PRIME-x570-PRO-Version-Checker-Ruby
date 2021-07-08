@@ -3,6 +3,8 @@
 require 'httparty'
 require 'launchy'
 
+BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
+
 def getCurrentVersion(toCheck)
 	current = %x(sudo dmidecode -s bios-version 2>&1)
 
@@ -13,9 +15,9 @@ def getCurrentVersion(toCheck)
 end
 
 def getNewestVersion(toCheck)
-	link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
+	
 	begin
-		newest = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][0]['Files'][0]['Version']
+		newest = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['Version']
 	rescue => err
 		puts "An error occured: (#{err.class}: #{err.message})"
 		return -1
@@ -27,8 +29,7 @@ def getNewestVersion(toCheck)
 end
 
 def isRelease(toCheck)
-    link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
-    is_release = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
+    is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
 
     return true if is_release == '1'
 end
