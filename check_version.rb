@@ -4,8 +4,8 @@ require 'launchy'
 DRIVERLINK = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
 BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
 
-def getCurrentVersion(toCheck)
-    case toCheck
+def get_current_version(to_check)
+    case to_check
     when 'bios'
         current = %x(wmic bios get name 2>&1).tr("Name \n", '')
     when 'chipset'
@@ -16,14 +16,13 @@ def getCurrentVersion(toCheck)
     
     return current if current =~ /\d/
 
-    puts "Current #{toCheck} version not found, skipping...\n\n"
+    puts "Current #{to_check} version not found, skipping...\n\n"
     return -1
 end
 
-def getNewestVersion(toCheck)
-
+def get_newest_version(to_check)
 	begin
-		case toCheck
+		case to_check
 		when 'bios'
 			newest = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['Version']
 		when 'chipset'
@@ -38,12 +37,12 @@ def getNewestVersion(toCheck)
 	
     return newest if newest =~ /\d/
 
-    puts "Newest #{toCheck} version not found, skipping...\n\n"
+    puts "Newest #{to_check} version not found, skipping...\n\n"
     return -1
 end
 
-def isRelease(toCheck)
-    case toCheck
+def is_release?(to_check)
+    case to_check
     when 'bios'
         is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
     when 'chipset'
@@ -55,47 +54,56 @@ def isRelease(toCheck)
     return true if is_release == '1'
 end
 
-def isCheckable(toCheck)
-    checks = ['bios', 'chipset', 'audiodriver']
-    checkable = checks.include? toCheck
-    puts 'Wrong parameter' unless checkable
-    return checkable
+def check?(to_check)
+	unless File.exists?('config.json')
+		puts "No config file found, creating..."
+		puts "\n"
+		json = {
+			'checks' => {
+				'bios' => true,
+				'chipset' => true,
+				'audiodriver' => true
+			}
+		}
+		File.open('config.json', 'w') {|f| f.write(JSON.pretty_generate(json)) }
+	end
+	
+	JSON.parse(File.read('config.json'))['checks'][to_check]
 end
 
-def openBrowser
+def open_browser
     puts 'Would you like to open your webbrowser to the update page? (Y/n)'
 	answer = gets.chomp
     if answer == 'y' or answer == ''
-        Launchy.open("https://www.asus.com/us/Motherboards-Components/Motherboards/All-series/PRIME-X570-PRO/HelpDesk_Download/")
+        Launchy.open('https://www.asus.com/us/Motherboards-Components/Motherboards/All-series/PRIME-X570-PRO/HelpDesk_Download/')
     end
 end
 
-def checkForUpdates(toCheck)
-    return unless isCheckable(toCheck)
+def check_for_updates(to_check)
+    puts "\t- #{to_check.upcase} -"
 
-    puts "\t- #{toCheck.upcase} -"
-
-    current = getCurrentVersion(toCheck)
-    newest = getNewestVersion(toCheck)
+    current = get_current_version(to_check)
+    newest = get_newest_version(to_check)
     return if current == -1 or newest == -1
     
     if current.tr('.', '') < newest.tr('.', '') 
-        puts "There is a newer #{toCheck} available!"
-        puts "Current #{toCheck} version: #{current}"
-        puts "Newest #{toCheck} version: #{newest}"
+        puts "There is a newer #{to_check} available!"
+        puts "Current #{to_check} version: #{current}"
+        puts "Newest #{to_check} version: #{newest}"
         puts "\n"
-        puts "Warning! This is a beta version." unless isRelease(toCheck)
+        puts 'Warning! This is a beta version.' unless is_release?(to_check)
 		puts "\n"
         return true
     else
-        puts "You have the latest #{toCheck}.\n\n"
+        puts "You have the latest #{to_check}."
+		puts "\n"
     end
 end
 
-bios = checkForUpdates('bios')
-chipset = checkForUpdates('chipset')
-audiodriver = checkForUpdates('audiodriver')
+check?('bios') ? bios = check_for_updates('bios') : bios = false
+check?('chipset') ? chipset = check_for_updates('chipset') : chipset = false
+check?('audiodriver') ? audiodriver = check_for_updates('audiodriver') : audiodriver = false
 
 if bios or chipset or audiodriver
-    openBrowser
+    open_browser
 end

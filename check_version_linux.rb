@@ -5,16 +5,16 @@ require 'launchy'
 
 BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
 
-def getCurrentVersion(toCheck)
+def get_current_version(to_check)
 	current = %x(sudo dmidecode -s bios-version 2>&1)
 
     return current if current =~ /\d/
 
-    puts "Current #{toCheck} version not found, skipping...\n\n"
+    puts "Current #{to_check} version not found, skipping...\n\n"
     return -1
 end
 
-def getNewestVersion(toCheck)
+def get_newest_version(to_check)
 	
 	begin
 		newest = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['Version']
@@ -24,24 +24,17 @@ def getNewestVersion(toCheck)
 	end
     return newest if newest =~ /\d/
 
-    puts "Newest #{toCheck} version not found, skipping...\n\n"
+    puts "Newest #{to_check} version not found, skipping...\n\n"
     return -1
 end
 
-def isRelease(toCheck)
-    is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
+def is_release(to_check)
+    is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['is_release']
 
     return true if is_release == '1'
 end
 
-def isCheckable(toCheck)
-    checks = ['bios']
-    checkable = checks.include? toCheck
-    puts 'Wrong parameter' unless checkable
-    return checkable
-end
-
-def openBrowser
+def open_browser
     puts 'Would you like to open your webbrowser to the update page? (Y/n)'
 	answer = gets.chomp
     if answer == 'y' or answer == ''
@@ -49,30 +42,29 @@ def openBrowser
     end
 end
 
-def checkForUpdates(toCheck)
-    return unless isCheckable(toCheck)
+def check_for_updates(to_check)
+    puts "\t- #{to_check.upcase} -"
 
-    puts "\t- #{toCheck.upcase} -"
-
-    current = getCurrentVersion(toCheck)
-    newest = getNewestVersion(toCheck)
+    current = get_current_version(to_check)
+    newest = get_newest_version(to_check)
     return if current == -1 or newest == -1
     
     if current < newest
-        puts "There is a newer #{toCheck} available!"
-        puts "Current #{toCheck} version: #{current}"
-        puts "Newest #{toCheck} version: #{newest}"
+        puts "There is a newer #{to_check} available!"
+        puts "Current #{to_check} version: #{current}"
+        puts "Newest #{to_check} version: #{newest}"
         puts "\n"
-        puts "Warning! This is a beta version." unless isRelease(toCheck)
+        puts "Warning! This is a beta version." unless is_release(to_check)
 		puts "\n"
         return true
     else
-        puts "You have the latest #{toCheck}.\n\n"
+        puts "You have the latest #{to_check}."
+		puts "\n"
     end
 end
 
-bios = checkForUpdates('bios')
+bios = check_for_updates('bios')
 
 if bios
-    openBrowser
+    open_browser
 end
