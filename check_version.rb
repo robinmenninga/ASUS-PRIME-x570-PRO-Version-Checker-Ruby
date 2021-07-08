@@ -1,6 +1,9 @@
 require 'httparty'
 require 'launchy'
 
+DRIVERLINK = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
+BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
+
 def getCurrentVersion(toCheck)
     case toCheck
     when 'bios'
@@ -18,16 +21,15 @@ def getCurrentVersion(toCheck)
 end
 
 def getNewestVersion(toCheck)
-    driverlink = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
-	bioslink = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
+
 	begin
 		case toCheck
 		when 'bios'
-			newest = JSON.parse(HTTParty.get(bioslink).body)['Result']['Obj'][0]['Files'][0]['Version']
+			newest = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['Version']
 		when 'chipset'
-			newest = JSON.parse(HTTParty.get(driverlink).body)['Result']['Obj'][1]['Files'][0]['Version']
+			newest = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['Version']
 		when 'audiodriver'
-			newest = JSON.parse(HTTParty.get(driverlink).body)['Result']['Obj'][2]['Files'][0]['Version']
+			newest = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['Version']
 		end
 	rescue => err
 		puts "An error occured: (#{err.class}: #{err.message})"
@@ -41,15 +43,13 @@ def getNewestVersion(toCheck)
 end
 
 def isRelease(toCheck)
-    link = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
     case toCheck
     when 'bios'
-        link = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
-        is_release = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
+        is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
     when 'chipset'
-        is_release = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][1]['Files'][0]['IsRelease']
+        is_release = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['IsRelease']
     when 'audiodriver'
-        is_release = JSON.parse(HTTParty.get(link).body)['Result']['Obj'][2]['Files'][0]['IsRelease']
+        is_release = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['IsRelease']
     end
 
     return true if is_release == '1'
