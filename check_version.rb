@@ -4,19 +4,19 @@ require 'launchy'
 DRIVERLINK = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
 BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
 
-def get_current_version(to_check)
+def get_installed_version(to_check)
     case to_check
     when 'bios'
-        current = %x(wmic bios get name 2>&1).tr("Name \n", '')
+        installed = %x(wmic bios get name 2>&1).tr("Name \n", '')
     when 'chipset'
-        current = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version 2>&1).tr("Version \n", '')
+        installed = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version 2>&1).tr("Version \n", '')
     when 'audiodriver'
-        current = %x(powershell.exe -EncodedCommand "RwBlAHQALQBXAG0AaQBPAGIAagBlAGMAdAAgAFcAaQBuADMAMgBfAFAAbgBQAFMAaQBnAG4AZQBkAEQAcgBpAHYAZQByACAALQBGAGkAbAB0AGUAcgAgACIARABlAHYAaQBjAGUATgBhAG0AZQAgAD0AIAAnAFIAZQBhAGwAdABlAGsAIABIAGkAZwBoACAARABlAGYAaQBuAGkAdABpAG8AbgAgAEEAdQBkAGkAbwAnACIAIAB8ACAAcwBlAGwAZQBjAHQAIABkAHIAaQB2AGUAcgB2AGUAcgBzAGkAbwBuACAAfAAgAEYAbwByAG0AYQB0AC0AVABhAGIAbABlACAALQBIAGkAZABlAFQAYQBiAGwAZQBIAGUAYQBkAGUAcgBzAA==").tr("\n", '')
+        installed = %x(powershell.exe -EncodedCommand "RwBlAHQALQBXAG0AaQBPAGIAagBlAGMAdAAgAFcAaQBuADMAMgBfAFAAbgBQAFMAaQBnAG4AZQBkAEQAcgBpAHYAZQByACAALQBGAGkAbAB0AGUAcgAgACIARABlAHYAaQBjAGUATgBhAG0AZQAgAD0AIAAnAFIAZQBhAGwAdABlAGsAIABIAGkAZwBoACAARABlAGYAaQBuAGkAdABpAG8AbgAgAEEAdQBkAGkAbwAnACIAIAB8ACAAcwBlAGwAZQBjAHQAIABkAHIAaQB2AGUAcgB2AGUAcgBzAGkAbwBuACAAfAAgAEYAbwByAG0AYQB0AC0AVABhAGIAbABlACAALQBIAGkAZABlAFQAYQBiAGwAZQBIAGUAYQBkAGUAcgBzAA==").tr("\n", '')
     end
     
-    return current if current =~ /\d/
+    return installed.strip if installed =~ /\d/
 
-    puts "Current #{to_check} version not found, skipping...\n\n"
+    puts "Installed #{to_check} version not found, skipping...\n\n"
     return -1
 end
 
@@ -82,20 +82,21 @@ end
 def check_for_updates(to_check)
     puts "\t- #{to_check.upcase} -"
 
-    current = get_current_version(to_check)
+    installed = get_installed_version(to_check)
     newest = get_newest_version(to_check)
-    return if current == -1 or newest == -1
+    return if installed == -1 or newest == -1
     
-    if current.tr('.', '') < newest.tr('.', '') 
+    if installed.tr('.', '') < newest.tr('.', '') 
         puts "There is a newer #{to_check} available!"
-        puts "Current #{to_check} version: #{current}"
-        puts "Newest #{to_check} version: #{newest}"
+        puts "Installed version: #{installed}"
+        puts "Newest version: #{newest}"
         puts "\n"
         puts 'Warning! This is a beta version.' unless is_release?(to_check)
 		puts "\n"
         return true
     else
         puts "You have the latest #{to_check}."
+        puts "Installed version: #{installed}"
 		puts "\n"
     end
 end
