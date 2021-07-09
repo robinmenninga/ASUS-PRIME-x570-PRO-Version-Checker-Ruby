@@ -17,7 +17,7 @@ On Windows, simply execute the provided bat file. You can also open command prom
 
 On Linux, run the command 'ruby check_version_linux.rb' or './check_version_linux.rb'.
 
-# Configuration
+# Configuration (Windows only)
 After running the script at least once, a configuration file will be made (config.json).
 You can choose what you want to be checked by the script by editing the variables in this json file.
 
