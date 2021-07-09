@@ -5,17 +5,16 @@ require 'launchy'
 
 BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
 
-def get_current_version(to_check)
-	current = %x(sudo dmidecode -s bios-version 2>&1)
+def get_installed_version(to_check)
+	installed = %x(sudo dmidecode -s bios-version 2>&1)
 
-    return current if current =~ /\d/
+    return installed.strip if installed =~ /\d/
 
-    puts "Current #{to_check} version not found, skipping...\n\n"
+    puts "Installed #{to_check} version not found, skipping...\n\n"
     return -1
 end
 
 def get_newest_version(to_check)
-	
 	begin
 		newest = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['Version']
 	rescue => err
@@ -28,7 +27,7 @@ def get_newest_version(to_check)
     return -1
 end
 
-def is_release(to_check)
+def is_release?(to_check)
     is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['is_release']
 
     return true if is_release == '1'
@@ -45,20 +44,21 @@ end
 def check_for_updates(to_check)
     puts "\t- #{to_check.upcase} -"
 
-    current = get_current_version(to_check)
+    installed = get_installed_version(to_check)
     newest = get_newest_version(to_check)
-    return if current == -1 or newest == -1
+    return if installed == -1 or newest == -1
     
-    if current < newest
+    if installed.tr('.', '') < newest.tr('.', '')
         puts "There is a newer #{to_check} available!"
-        puts "Current #{to_check} version: #{current}"
-        puts "Newest #{to_check} version: #{newest}"
+        puts "Installed version: #{installed}"
+        puts "Newest version: #{newest}"
         puts "\n"
-        puts "Warning! This is a beta version." unless is_release(to_check)
+        puts "Warning! This is a beta version." unless is_release?(to_check)
 		puts "\n"
         return true
     else
         puts "You have the latest #{to_check}."
+        puts "Installed version: #{installed}"
 		puts "\n"
     end
 end
