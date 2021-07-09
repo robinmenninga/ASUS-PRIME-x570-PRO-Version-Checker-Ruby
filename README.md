@@ -16,3 +16,9 @@ Start by installing all the dependencies. This is done by running the command 'b
 On Windows, simply execute the provided bat file. You can also open command prompt and execute the command 'ruby check_version.rb' from there (which is what the bat file does).
 
 On Linux, run the command 'ruby check_version_linux.rb' or './check_version_linux.rb'.
+
+# Configuration
+After running the script at least once, a configuration file will be made (config.json).
+You can choose what you want to be checked by the script by editing the variables in this json file.
+
+By default, every version will be checked.
