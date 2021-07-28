@@ -54,21 +54,35 @@ def is_release?(to_check)
     return true if is_release == '1'
 end
 
+def create_config
+	puts "No config file found, creating..."
+	puts "\n"
+	json = {
+		'checks' => {
+			'bios' => true,
+			'chipset' => true,
+			'audiodriver' => true
+		}, 'prefs' => {
+			'check_beta' => true
+		}
+	}
+	File.open('config.json', 'w') {|f| f.write(JSON.pretty_generate(json)) }
+end
+
 def check?(to_check)
 	unless File.exists?('config.json')
-		puts "No config file found, creating..."
-		puts "\n"
-		json = {
-			'checks' => {
-				'bios' => true,
-				'chipset' => true,
-				'audiodriver' => true
-			}
-		}
-		File.open('config.json', 'w') {|f| f.write(JSON.pretty_generate(json)) }
+		create_config
 	end
 	
 	JSON.parse(File.read('config.json'))['checks'][to_check]
+end
+
+def check_beta?
+	unless File.exists?('config.json')
+		create_config
+	end
+	
+	JSON.parse(File.read('config.json'))['prefs']['check_beta']	
 end
 
 def open_browser
@@ -85,13 +99,15 @@ def check_for_updates(to_check)
     installed = get_installed_version(to_check)
     newest = get_newest_version(to_check)
     return if installed == -1 or newest == -1
-    
-    if installed.tr('.', '') < newest.tr('.', '') 
+    is_release = is_release?(to_check)
+	betastop = !check_beta? and !is_release
+	
+    if installed.tr('.', '') < newest.tr('.', '') and !betastop
         puts "There is a newer #{to_check} available!"
         puts "Installed version: #{installed}"
         puts "Newest version: #{newest}"
         puts "\n"
-        puts 'Warning! This is a beta version.' unless is_release?(to_check)
+        puts 'Warning! This is a beta version.' unless is_release
 		puts "\n"
         return true
     else
