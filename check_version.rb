@@ -100,9 +100,9 @@ def check_for_updates(to_check)
     newest = get_newest_version(to_check)
     return if installed == -1 or newest == -1
     is_release = is_release?(to_check)
-	betastop = !check_beta? and !is_release
+	betastop = !check_beta? && !is_release
 	
-    if installed.tr('.', '') < newest.tr('.', '') and !betastop
+    if installed.tr('.', '') < newest.tr('.', '') && !betastop
         puts "There is a newer #{to_check} available!"
         puts "Installed version: #{installed}"
         puts "Newest version: #{newest}"
