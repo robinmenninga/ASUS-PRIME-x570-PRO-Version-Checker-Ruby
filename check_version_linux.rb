@@ -48,7 +48,7 @@ def check_for_updates(to_check)
     newest = get_newest_version(to_check)
     return if installed == -1 or newest == -1
     
-    if installed.tr('.', '') < newest.tr('.', '')
+    if Gem::Version.new(installed) < Gem::Version.new(newest)
         puts "There is a newer #{to_check} available!"
         puts "Installed version: #{installed}"
         puts "Newest version: #{newest}"

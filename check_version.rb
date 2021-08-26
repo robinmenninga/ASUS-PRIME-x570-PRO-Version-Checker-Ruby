@@ -102,7 +102,7 @@ def check_for_updates(to_check)
     is_release = is_release?(to_check)
 	betastop = !check_beta? && !is_release
 	
-    if installed.tr('.', '') < newest.tr('.', '') && !betastop
+    if Gem::Version.new(installed) < Gem::Version.new(newest) && !betastop
         puts "There is a newer #{to_check} available!"
         puts "Installed version: #{installed}"
         puts "Newest version: #{newest}"
