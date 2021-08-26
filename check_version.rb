@@ -4,6 +4,8 @@ require 'launchy'
 DRIVERLINK = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
 BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
 
+
+
 def get_installed_version(to_check)
     case to_check
     when 'bios'
@@ -85,11 +87,32 @@ def check_beta?
 	JSON.parse(File.read('config.json'))['prefs']['check_beta']	
 end
 
-def open_browser
-    puts 'Would you like to open your webbrowser to the update page? (Y/n)'
+def get_download_link(item)
+	begin
+		case item
+		when 'bios'
+			download_link = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
+		when 'chipset'
+			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
+		when 'audiodriver'
+			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
+		end
+	rescue => err
+		puts "An error occured: (#{err.class}: #{err.message})"
+		return
+	end
+	
+	return download_link
+end
+
+def download_updates
+	puts 'Would you like to download the updates? This will open your default browser.'
 	answer = gets.chomp
     if answer == 'y' or answer == ''
-        Launchy.open('https://www.asus.com/us/Motherboards-Components/Motherboards/All-series/PRIME-X570-PRO/HelpDesk_Download/')
+        UPDATE_AVAILABLE.each { |key, value|
+			link = get_download_link(key.to_s)
+			Launchy.open(link) if value == true && link != ''
+		}
     end
 end
 
@@ -103,13 +126,13 @@ def check_for_updates(to_check)
 	betastop = !check_beta? && !is_release
 	
     if Gem::Version.new(installed) < Gem::Version.new(newest) && !betastop
+		UPDATE_AVAILABLE[to_check.to_sym] = true
         puts "There is a newer #{to_check} available!"
         puts "Installed version: #{installed}"
         puts "Newest version: #{newest}"
         puts "\n"
         puts 'Warning! This is a beta version.' unless is_release
 		puts "\n"
-        return true
     else
         puts "You have the latest #{to_check}."
         puts "Installed version: #{installed}"
@@ -117,10 +140,12 @@ def check_for_updates(to_check)
     end
 end
 
-check?('bios') ? bios = check_for_updates('bios') : bios = false
-check?('chipset') ? chipset = check_for_updates('chipset') : chipset = false
-check?('audiodriver') ? audiodriver = check_for_updates('audiodriver') : audiodriver = false
+UPDATE_AVAILABLE = {bios: false, chipset: false, audiodriver: false}
 
-if bios or chipset or audiodriver
-    open_browser
+check_for_updates('bios') if check?('bios')
+check_for_updates('chipset') if check?('chipset')
+check_for_updates('audiodriver') if check?('audiodriver')
+
+if UPDATE_AVAILABLE.has_value?(true)
+    download_updates
 end

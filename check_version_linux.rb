@@ -33,11 +33,32 @@ def is_release?(to_check)
     return true if is_release == '1'
 end
 
-def open_browser
-    puts 'Would you like to open your webbrowser to the update page? (Y/n)'
+def get_download_link(item)
+	begin
+		case item
+		when 'bios'
+			download_link = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
+		when 'chipset'
+			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
+		when 'audiodriver'
+			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
+		end
+	rescue => err
+		puts "An error occured: (#{err.class}: #{err.message})"
+		return
+	end
+	
+	return download_link
+end
+
+def download_updates
+	puts 'Would you like to download the updates? This will open your default browser.'
 	answer = gets.chomp
     if answer == 'y' or answer == ''
-        Launchy.open("https://www.asus.com/us/Motherboards-Components/Motherboards/All-series/PRIME-X570-PRO/HelpDesk_Download/")
+        UPDATE_AVAILABLE.each { |key, value|
+			link = get_download_link(key.to_s)
+			Launchy.open(link) if value == true && link != ''
+		}
     end
 end
 
@@ -49,13 +70,13 @@ def check_for_updates(to_check)
     return if installed == -1 or newest == -1
     
     if Gem::Version.new(installed) < Gem::Version.new(newest)
+		UPDATE_AVAILABLE[to_check.to_sym] = true
         puts "There is a newer #{to_check} available!"
         puts "Installed version: #{installed}"
         puts "Newest version: #{newest}"
         puts "\n"
         puts "Warning! This is a beta version." unless is_release?(to_check)
 		puts "\n"
-        return true
     else
         puts "You have the latest #{to_check}."
         puts "Installed version: #{installed}"
@@ -63,8 +84,11 @@ def check_for_updates(to_check)
     end
 end
 
-bios = check_for_updates('bios')
+# hash for possible future version checks on linux, unlikely tho
+UPDATE_AVAILABLE = {bios: false}
 
-if bios
-    open_browser
+check_for_updates('bios')
+
+if UPDATE_AVAILABLE.has_value?(true)
+    download_updates
 end
