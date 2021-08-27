@@ -3,7 +3,7 @@
 require 'httparty'
 require 'launchy'
 
-BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
+BIOSJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl').body)
 
 def get_installed_version(to_check)
 	installed = %x(sudo dmidecode -s bios-version 2>&1)
@@ -16,7 +16,7 @@ end
 
 def get_newest_version(to_check)
 	begin
-		newest = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['Version']
+		newest = BIOSJSON['Result']['Obj'][0]['Files'][0]['Version']
 	rescue => err
 		puts "An error occured: (#{err.class}: #{err.message})"
 		return -1
@@ -28,25 +28,13 @@ def get_newest_version(to_check)
 end
 
 def is_release?(to_check)
-    is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['is_release']
+    is_release = BIOSJSON['Result']['Obj'][0]['Files'][0]['is_release']
 
     return true if is_release == '1'
 end
 
 def get_download_link(item)
-	begin
-		case item
-		when 'bios'
-			download_link = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
-		when 'chipset'
-			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
-		when 'audiodriver'
-			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
-		end
-	rescue => err
-		puts "An error occured: (#{err.class}: #{err.message})"
-		return
-	end
+	download_link = BIOSJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
 	
 	return download_link
 end

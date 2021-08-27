@@ -1,10 +1,8 @@
 require 'httparty'
 require 'launchy'
 
-DRIVERLINK = 'https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45'
-BIOSLINK = 'https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl'
-
-
+BIOSJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl').body)
+DRIVERJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45').body)
 
 def get_installed_version(to_check)
     case to_check
@@ -26,11 +24,11 @@ def get_newest_version(to_check)
 	begin
 		case to_check
 		when 'bios'
-			newest = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['Version']
+			newest = BIOSJSON['Result']['Obj'][0]['Files'][0]['Version']
 		when 'chipset'
-			newest = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['Version']
+			newest = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Version']
 		when 'audiodriver'
-			newest = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['Version']
+			newest = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Version']
 		end
 	rescue => err
 		puts "An error occured: (#{err.class}: #{err.message})"
@@ -46,11 +44,11 @@ end
 def is_release?(to_check)
     case to_check
     when 'bios'
-        is_release = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['IsRelease']
+        is_release = BIOSJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
     when 'chipset'
-        is_release = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['IsRelease']
+        is_release = DRIVERJSON['Result']['Obj'][1]['Files'][0]['IsRelease']
     when 'audiodriver'
-        is_release = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['IsRelease']
+        is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
     end
 
     return true if is_release == '1'
@@ -91,11 +89,11 @@ def get_download_link(item)
 	begin
 		case item
 		when 'bios'
-			download_link = JSON.parse(HTTParty.get(BIOSLINK).body)['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
+			download_link = BIOSJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
 		when 'chipset'
-			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
+			download_link = DRIVERJSON['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
 		when 'audiodriver'
-			download_link = JSON.parse(HTTParty.get(DRIVERLINK).body)['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
+			download_link = DRIVERJSON['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
 		end
 	rescue => err
 		puts "An error occured: (#{err.class}: #{err.message})"
