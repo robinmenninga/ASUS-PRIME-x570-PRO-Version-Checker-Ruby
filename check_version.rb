@@ -55,7 +55,6 @@ def is_release?(to_check)
 end
 
 def create_config
-	puts "No config file found, creating..."
 	puts "\n"
 	json = {
 		'checks' => {
@@ -70,19 +69,24 @@ def create_config
 end
 
 def check?(to_check)
-	unless File.exists?('config.json')
-		create_config
-	end
-	
 	JSON.parse(File.read('config.json'))['checks'][to_check]
 end
 
 def check_beta?
-	unless File.exists?('config.json')
+	JSON.parse(File.read('config.json'))['prefs']['check_beta']
+end
+
+def config_exists?
+	File.exists?('config.json')
+end
+
+def check_corrupt
+	JSON.parse(File.read('config.json'))
+	rescue JSON::ParserError => e
+		puts "Config file is corrupt. Renaming to 'config_corrupt.json'. Creating a new config file."
+		File.rename("config.json", "config_corrupt.json")
 		create_config
-	end
 	
-	JSON.parse(File.read('config.json'))['prefs']['check_beta']	
 end
 
 def get_download_link(item)
@@ -139,6 +143,13 @@ def check_for_updates(to_check)
 end
 
 UPDATE_AVAILABLE = {bios: false, chipset: false, audiodriver: false}
+
+unless config_exists?
+	puts "No config file found, creating..."
+	create_config
+end
+
+check_corrupt
 
 check_for_updates('bios') if check?('bios')
 check_for_updates('chipset') if check?('chipset')
