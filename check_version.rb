@@ -5,19 +5,24 @@ BIOSJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asm
 DRIVERJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45').body)
 
 def get_installed_version(to_check)
-    case to_check
-    when 'bios'
-        installed = %x(wmic bios get name 2>&1).tr("Name \n", '')
-    when 'chipset'
-        installed = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version 2>&1).tr("Version \n", '')
-    when 'audiodriver'
-        installed = %x(powershell.exe -EncodedCommand "RwBlAHQALQBXAG0AaQBPAGIAagBlAGMAdAAgAFcAaQBuADMAMgBfAFAAbgBQAFMAaQBnAG4AZQBkAEQAcgBpAHYAZQByACAALQBGAGkAbAB0AGUAcgAgACIARABlAHYAaQBjAGUATgBhAG0AZQAgAD0AIAAnAFIAZQBhAGwAdABlAGsAIABIAGkAZwBoACAARABlAGYAaQBuAGkAdABpAG8AbgAgAEEAdQBkAGkAbwAnACIAIAB8ACAAcwBlAGwAZQBjAHQAIABkAHIAaQB2AGUAcgB2AGUAcgBzAGkAbwBuACAAfAAgAEYAbwByAG0AYQB0AC0AVABhAGIAbABlACAALQBIAGkAZABlAFQAYQBiAGwAZQBIAGUAYQBkAGUAcgBzAA==").tr("\n", '')
-    end
-    
-    return installed.strip if installed =~ /\d/
+	begin
+		case to_check
+		when 'bios'
+			installed = %x(wmic bios get name 2>&1).tr("Name \n", '')
+		when 'chipset'
+			installed = %x(wmic datafile where 'name="C:\\\\AMD\\\\Chipset_Driver_Installer\\\\AMD_Chipset_Software.exe"' get version 2>&1).tr("Version \n", '')
+		when 'audiodriver'
+			installed = %x(powershell.exe -EncodedCommand "RwBlAHQALQBXAG0AaQBPAGIAagBlAGMAdAAgAFcAaQBuADMAMgBfAFAAbgBQAFMAaQBnAG4AZQBkAEQAcgBpAHYAZQByACAALQBGAGkAbAB0AGUAcgAgACIARABlAHYAaQBjAGUATgBhAG0AZQAgAD0AIAAnAFIAZQBhAGwAdABlAGsAIABIAGkAZwBoACAARABlAGYAaQBuAGkAdABpAG8AbgAgAEEAdQBkAGkAbwAnACIAIAB8ACAAcwBlAGwAZQBjAHQAIABkAHIAaQB2AGUAcgB2AGUAcgBzAGkAbwBuACAAfAAgAEYAbwByAG0AYQB0AC0AVABhAGIAbABlACAALQBIAGkAZABlAFQAYQBiAGwAZQBIAGUAYQBkAGUAcgBzAA==").tr("\n", '')
+		end
 
-    puts "Installed #{to_check} version not found, skipping...\n\n"
-    return -1
+		unless installed =~ /\d/ raise 'Returned variable does not contain a number.'
+	rescue => err
+		puts "An error occured: (#{err.message})"
+		puts "Unable to get installed #{to_check} version, skipping...\n\n"
+		return -1
+	end
+	
+	return installed.strip
 end
 
 def get_newest_version(to_check)
@@ -30,28 +35,36 @@ def get_newest_version(to_check)
 		when 'audiodriver'
 			newest = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Version']
 		end
+
+		unless newest =~ /\d/ raise 'Returned variable does not contain a number.'
 	rescue => err
-		puts "An error occured: (#{err.class}: #{err.message})"
+		puts "An error occured: (#{err.message})"
+		puts "Unable to get latest #{to_check} version, skipping...\n\n"
 		return -1
 	end
 	
-    return newest if newest =~ /\d/
-
-    puts "Newest #{to_check} version not found, skipping...\n\n"
-    return -1
+	return newest
 end
 
 def is_release?(to_check)
-    case to_check
-    when 'bios'
-        is_release = BIOSJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
-    when 'chipset'
-        is_release = DRIVERJSON['Result']['Obj'][1]['Files'][0]['IsRelease']
-    when 'audiodriver'
-        is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
-    end
-
-    return true if is_release == '1'
+	begin
+		case to_check
+		when 'bios'
+			is_release = BIOSJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
+		when 'chipset'
+			is_release = DRIVERJSON['Result']['Obj'][1]['Files'][0]['IsRelease']
+		when 'audiodriver'
+			is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
+		end
+		
+		unless is_release =~ /\d/ raise 'Returned variable does not contain a number.'
+	rescue => err
+		puts "An error occured: (#{err.message})"
+		puts "Unable to check if #{to_check} is release or not.\n\n"
+		return true
+	end
+	
+	return true if is_release == '1'
 end
 
 def create_config
@@ -81,12 +94,13 @@ def config_exists?
 end
 
 def check_corrupt
-	JSON.parse(File.read('config.json'))
+	begin
+		JSON.parse(File.read('config.json'))
 	rescue JSON::ParserError => e
 		puts "Config file is corrupt. Renaming to 'config_corrupt.json'. Creating a new config file."
 		File.rename("config.json", "config_corrupt.json")
 		create_config
-	
+	end
 end
 
 def get_download_link(item)
@@ -99,47 +113,51 @@ def get_download_link(item)
 		when 'audiodriver'
 			download_link = DRIVERJSON['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
 		end
+	unless download_link =~ /http/i raise 'Download link does not contain link'
 	rescue => err
-		puts "An error occured: (#{err.class}: #{err.message})"
-		return
+		puts "An error occured: (#{err.message})"
+		puts "Unable to get download link of #{to_check}.\n\n"
+		return ''
 	end
 	
 	return download_link
 end
 
 def download_updates
-	puts 'Would you like to download the updates? This will open your default browser.'
+	puts 'Would you like to download the updates? This will open your default browser. (y/n)'
 	answer = gets.chomp
-    if answer == 'y' or answer == ''
-        UPDATE_AVAILABLE.each { |key, value|
+	if answer == 'y' or answer == ''
+		UPDATE_AVAILABLE.each { |key, value|
+		if value == true
 			link = get_download_link(key.to_s)
-			Launchy.open(link) if value == true && link != ''
+			Launchy.open(link) if link != ''
+		end
 		}
-    end
+	end
 end
 
 def check_for_updates(to_check)
-    puts "\t- #{to_check.upcase} -"
+	puts "\t- #{to_check.upcase} -"
 
-    installed = get_installed_version(to_check)
-    newest = get_newest_version(to_check)
-    return if installed == -1 or newest == -1
-    is_release = is_release?(to_check)
+	installed = get_installed_version(to_check)
+	newest = get_newest_version(to_check)
+	return if installed == -1 or newest == -1
+	is_release = is_release?(to_check)
 	betastop = !check_beta? && !is_release
-	
-    if Gem::Version.new(installed) < Gem::Version.new(newest) && !betastop
+
+	if Gem::Version.new(installed) < Gem::Version.new(newest) && !betastop
 		UPDATE_AVAILABLE[to_check.to_sym] = true
-        puts "There is a newer #{to_check} available!"
-        puts "Installed version: #{installed}"
-        puts "Newest version: #{newest}"
-        puts "\n"
-        puts 'Warning! This is a beta version.' unless is_release
+		puts "There is a newer #{to_check} available!"
+		puts "Installed version: #{installed}"
+		puts "Newest version: #{newest}"
 		puts "\n"
-    else
-        puts "You have the latest #{to_check}."
-        puts "Installed version: #{installed}"
+		puts 'Warning! This is a beta version.' unless is_release
 		puts "\n"
-    end
+	else
+		puts "You have the latest #{to_check}."
+		puts "Installed version: #{installed}"
+		puts "\n"
+	end
 end
 
 UPDATE_AVAILABLE = {bios: false, chipset: false, audiodriver: false}
@@ -156,5 +174,5 @@ check_for_updates('chipset') if check?('chipset')
 check_for_updates('audiodriver') if check?('audiodriver')
 
 if UPDATE_AVAILABLE.has_value?(true)
-    download_updates
+	download_updates
 end
