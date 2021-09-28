@@ -14,8 +14,8 @@ def get_installed_version(to_check)
 		when 'audiodriver'
 			installed = %x(powershell.exe -EncodedCommand "RwBlAHQALQBXAG0AaQBPAGIAagBlAGMAdAAgAFcAaQBuADMAMgBfAFAAbgBQAFMAaQBnAG4AZQBkAEQAcgBpAHYAZQByACAALQBGAGkAbAB0AGUAcgAgACIARABlAHYAaQBjAGUATgBhAG0AZQAgAD0AIAAnAFIAZQBhAGwAdABlAGsAIABIAGkAZwBoACAARABlAGYAaQBuAGkAdABpAG8AbgAgAEEAdQBkAGkAbwAnACIAIAB8ACAAcwBlAGwAZQBjAHQAIABkAHIAaQB2AGUAcgB2AGUAcgBzAGkAbwBuACAAfAAgAEYAbwByAG0AYQB0AC0AVABhAGIAbABlACAALQBIAGkAZABlAFQAYQBiAGwAZQBIAGUAYQBkAGUAcgBzAA==").tr("\n", '')
 		end
-
-		unless installed =~ /\d/ raise 'Returned variable does not contain a number.'
+		
+		raise 'Returned variable does not contain a number.' unless installed =~ /\d/ 
 	rescue => err
 		puts "An error occured: (#{err.message})"
 		puts "Unable to get installed #{to_check} version, skipping...\n\n"
@@ -36,7 +36,7 @@ def get_newest_version(to_check)
 			newest = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Version']
 		end
 
-		unless newest =~ /\d/ raise 'Returned variable does not contain a number.'
+		raise 'Returned variable does not contain a number.' unless newest =~ /\d/ 
 	rescue => err
 		puts "An error occured: (#{err.message})"
 		puts "Unable to get latest #{to_check} version, skipping...\n\n"
@@ -57,7 +57,8 @@ def is_release?(to_check)
 			is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
 		end
 		
-		unless is_release =~ /\d/ raise 'Returned variable does not contain a number.'
+
+		raise 'Returned variable does not contain a number.' unless is_release =~ /\d/
 	rescue => err
 		puts "An error occured: (#{err.message})"
 		puts "Unable to check if #{to_check} is release or not.\n\n"
@@ -113,7 +114,8 @@ def get_download_link(item)
 		when 'audiodriver'
 			download_link = DRIVERJSON['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
 		end
-	unless download_link =~ /http/i raise 'Download link does not contain link'
+
+		raise 'Download link does not contain link' unless download_link =~ /http/i
 	rescue => err
 		puts "An error occured: (#{err.message})"
 		puts "Unable to get download link of #{to_check}.\n\n"
