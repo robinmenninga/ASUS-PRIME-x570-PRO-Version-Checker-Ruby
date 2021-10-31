@@ -1,6 +1,6 @@
 # ASUS PRIME x570 PRO Version Checker
 Script that checks if you have the latest PRIME x570-PRO bios, audio driver and chipset, made in ruby.
-The script only checks the latest chipset and audio driver for Windows 10, not Windows 11.
+The only difference (currently) between the windows 10 and 11 versions is the chipset driver check.
 
 Main script only works on Windows.
 Linux version only checks the bios version.
