@@ -131,12 +131,43 @@ def download_updates
 	answer = gets.chomp
 	if answer == 'y' or answer == ''
 		UPDATE_AVAILABLE.each { |key, value|
-		if value == true
-			link = get_download_link(key.to_s)
-			Launchy.open(link) if link != ''
-		end
+			if value == true
+				link = get_download_link(key.to_s)
+				Launchy.open(link) if link != ''
+			end
 		}
 	end
+end
+
+def show_update_description
+	notes = ""
+	name = ""
+	UPDATE_AVAILABLE.each { |key, value|
+		if value == true
+			case key.to_s
+			when 'bios'
+				name = 'Bios'
+				notes = BIOSJSON['Result']['Obj'][0]['Files'][0]['Description']
+			when 'chipset'
+				name = 'Chipset'
+				notes = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Description']
+			when 'audiodriver'
+				name = 'Audiodriver'
+				notes = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Description']
+			end
+		end
+	}
+	if notes == ""
+		puts "#{name} update description not available."
+		puts "\n"
+		return
+	end
+	puts "#{name} update description:"
+	puts "\n"
+	puts '----------------------------------------'
+	puts notes
+	puts '----------------------------------------'
+	puts "\n"
 end
 
 def check_for_updates(to_check)
@@ -154,8 +185,7 @@ def check_for_updates(to_check)
 		puts "Installed version: #{installed}"
 		puts "Newest version: #{newest}"
 		puts "\n"
-		puts 'Warning! This is a beta version.' unless is_release
-		puts "\n"
+		puts "Warning! This is a beta version.\n\n" unless is_release
 	else
 		puts "You have the latest #{to_check}."
 		puts "Installed version: #{installed}"
@@ -177,5 +207,6 @@ check_for_updates('chipset') if check?('chipset')
 check_for_updates('audiodriver') if check?('audiodriver')
 
 if UPDATE_AVAILABLE.has_value?(true)
+	show_update_description
 	download_updates
 end
