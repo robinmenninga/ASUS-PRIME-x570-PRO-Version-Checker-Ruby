@@ -59,7 +59,7 @@ def is_release?(to_check)
 		when 'bios'
 			is_release = BIOSJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
 		when 'chipset'
-			is_release = DRIVERJSON['Result']['Obj'][1]['Files'][0]['IsRelease']
+			is_release = WIN11DRIVERJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
 		when 'audiodriver'
 			is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
 		end
@@ -126,7 +126,7 @@ def get_download_link(item)
 		when 'bios'
 			download_link = BIOSJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
 		when 'chipset'
-			download_link = DRIVERJSON['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
+			download_link = WIN11DRIVERJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
 		when 'audiodriver'
 			download_link = DRIVERJSON['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
 		end
@@ -170,7 +170,7 @@ def show_update_description
 				notes = BIOSJSON['Result']['Obj'][0]['Files'][0]['Description']
 			when 'chipset'
 				name = 'Chipset'
-				notes = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Description']
+				notes = WIN11DRIVERJSON['Result']['Obj'][0]['Files'][0]['Description']
 			when 'audiodriver'
 				name = 'Audiodriver'
 				notes = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Description']
