@@ -1,9 +1,11 @@
 require 'httparty'
 require 'launchy'
 
+# All calls to ASUS' API parsed to json
 BIOSJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl').body)
 DRIVERJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45').body)
 
+# Returns the installed version
 def get_installed_version(to_check)
 	begin
 		case to_check
@@ -15,6 +17,7 @@ def get_installed_version(to_check)
 			installed = %x(powershell.exe -EncodedCommand "RwBlAHQALQBXAG0AaQBPAGIAagBlAGMAdAAgAFcAaQBuADMAMgBfAFAAbgBQAFMAaQBnAG4AZQBkAEQAcgBpAHYAZQByACAALQBGAGkAbAB0AGUAcgAgACIARABlAHYAaQBjAGUATgBhAG0AZQAgAD0AIAAnAFIAZQBhAGwAdABlAGsAIABIAGkAZwBoACAARABlAGYAaQBuAGkAdABpAG8AbgAgAEEAdQBkAGkAbwAnACIAIAB8ACAAcwBlAGwAZQBjAHQAIABkAHIAaQB2AGUAcgB2AGUAcgBzAGkAbwBuACAAfAAgAEYAbwByAG0AYQB0AC0AVABhAGIAbABlACAALQBIAGkAZABlAFQAYQBiAGwAZQBIAGUAYQBkAGUAcgBzAA==").tr("\n", '')
 		end
 		
+		# Raise error if installed somehow doesn't contain a number
 		raise 'Returned variable does not contain a number.' unless installed =~ /\d/ 
 	rescue => err
 		puts "An error occured: (#{err.message})"
@@ -25,6 +28,7 @@ def get_installed_version(to_check)
 	return installed.strip
 end
 
+# Returns the newest version from ASUS' website
 def get_newest_version(to_check)
 	begin
 		case to_check
@@ -36,6 +40,7 @@ def get_newest_version(to_check)
 			newest = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Version']
 		end
 
+		# Raise error if version from website somehow doesn't contain a number
 		raise 'Returned variable does not contain a number.' unless newest =~ /\d/ 
 	rescue => err
 		puts "An error occured: (#{err.message})"
@@ -46,6 +51,7 @@ def get_newest_version(to_check)
 	return newest
 end
 
+# Returns whether newest version is a release and not a beta
 def is_release?(to_check)
 	begin
 		case to_check
@@ -57,19 +63,22 @@ def is_release?(to_check)
 			is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
 		end
 		
-
+		# Raise error if version from website somehow doesn't contain a number (should be either 0 or 1)
 		raise 'Returned variable does not contain a number.' unless is_release =~ /\d/
 	rescue => err
 		puts "An error occured: (#{err.message})"
 		puts "Unable to check if #{to_check} is release or not.\n\n"
+		# If it can't find out, say it's a release
 		return true
 	end
 	
 	return true if is_release == '1'
 end
 
+# Create a config file
 def create_config
 	puts "\n"
+	# Default config file structure
 	json = {
 		'checks' => {
 			'bios' => true,
@@ -79,21 +88,26 @@ def create_config
 			'check_beta' => true
 		}
 	}
+	# Write default structure to file called config.json and make it pretty
 	File.open('config.json', 'w') {|f| f.write(JSON.pretty_generate(json)) }
 end
 
+# Check config file if version should be checked
 def check?(to_check)
 	JSON.parse(File.read('config.json'))['checks'][to_check]
 end
 
+# Check config file if beta versions should be checked
 def check_beta?
 	JSON.parse(File.read('config.json'))['prefs']['check_beta']
 end
 
+# Check if config file exists
 def config_exists?
 	File.exists?('config.json')
 end
 
+# Check if config file is valid by trying to parse it
 def check_corrupt
 	begin
 		JSON.parse(File.read('config.json'))
@@ -104,6 +118,7 @@ def check_corrupt
 	end
 end
 
+# Returns the download link of the newest version
 def get_download_link(item)
 	begin
 		case item
@@ -115,20 +130,24 @@ def get_download_link(item)
 			download_link = DRIVERJSON['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
 		end
 
+		# Raise error if variable doesn't contain link
 		raise 'Download link does not contain link' unless download_link =~ /http/i
 	rescue => err
 		puts "An error occured: (#{err.message})"
 		puts "Unable to get download link of #{to_check}.\n\n"
+		# Returns empty string if download link cannot be found
 		return ''
 	end
 	
 	return download_link
 end
 
+# Asks user if it wants to download updates. If yes, opens browser to all outdated versions
 def download_updates
 	puts 'Would you like to download the updates? This will open your default browser. (y/n)'
 	answer = gets.chomp
 	if answer == 'y' or answer == ''
+		# Go through each available update and open the link in browser
 		UPDATE_AVAILABLE.each { |key, value|
 			if value == true
 				link = get_download_link(key.to_s)
@@ -138,6 +157,7 @@ def download_updates
 	end
 end
 
+# Prints update description 
 def show_update_description
 	notes = ""
 	name = ""
@@ -169,16 +189,20 @@ def show_update_description
 	puts "\n"
 end
 
+# Print info to tell user whether a new version is available. 
 def check_for_updates(to_check)
 	puts "\t- #{to_check.upcase} -"
 
 	installed = get_installed_version(to_check)
 	newest = get_newest_version(to_check)
+	# Return if version couldn't be found
 	return if installed == -1 or newest == -1
 	is_release = is_release?(to_check)
+	# Boolean that's true if it shouldn't notify for beta versions
 	betastop = !check_beta? && !is_release
 
 	if Gem::Version.new(installed) < Gem::Version.new(newest) && !betastop
+		# Set hash to true for later use
 		UPDATE_AVAILABLE[to_check.to_sym] = true
 		puts "There is a newer #{to_check} available!"
 		puts "Installed version: #{installed}"
@@ -192,19 +216,24 @@ def check_for_updates(to_check)
 	end
 end
 
+# Hash containing whether updates are available. For use by other functions after all checks are done
 UPDATE_AVAILABLE = {bios: false, chipset: false, audiodriver: false}
 
+# Create config if it doesn't exist
 unless config_exists?
 	puts "No config file found, creating..."
 	create_config
 end
 
+# Check if json is corrupt
 check_corrupt
 
+# Check for updates if set by config
 check_for_updates('bios') if check?('bios')
 check_for_updates('chipset') if check?('chipset')
 check_for_updates('audiodriver') if check?('audiodriver')
 
+# If any update is available, show their descriptions and ask user if it wants to download the updates
 if UPDATE_AVAILABLE.has_value?(true)
 	show_update_description
 	download_updates
