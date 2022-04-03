@@ -3,8 +3,7 @@ require 'launchy'
 
 # All calls to ASUS' API parsed to json
 BIOSJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDBIOS?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl').body)
-WIN11DRIVERJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=52').body)
-DRIVERJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=45').body)
+DRIVERJSON = JSON.parse(HTTParty.get('https://www.asus.com/support/api/product.asmx/GetPDDrivers?website=us&model=PRIME-X570-PRO&pdhashedid=aDvY2vRFhs99nFdl&osid=52').body)
 
 # Returns the installed version
 def get_installed_version(to_check)
@@ -36,9 +35,9 @@ def get_newest_version(to_check)
 		when 'bios'
 			newest = BIOSJSON['Result']['Obj'][0]['Files'][0]['Version']
 		when 'chipset'
-			newest = WIN11DRIVERJSON['Result']['Obj'][0]['Files'][0]['Version']
+			newest = DRIVERJSON['Result']['Obj'][0]['Files'][0]['Version']
 		when 'audiodriver'
-			newest = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Version']
+			newest = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Version']
 		end
 
 		# Raise error if version from website somehow doesn't contain a number
@@ -59,9 +58,9 @@ def is_release?(to_check)
 		when 'bios'
 			is_release = BIOSJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
 		when 'chipset'
-			is_release = WIN11DRIVERJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
+			is_release = DRIVERJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
 		when 'audiodriver'
-			is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
+			is_release = DRIVERJSON['Result']['Obj'][1]['Files'][0]['IsRelease']
 		end
 
 		# Raise error if version from website somehow doesn't contain a number (should be either 0 or 1)
@@ -126,9 +125,9 @@ def get_download_link(item)
 		when 'bios'
 			download_link = BIOSJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
 		when 'chipset'
-			download_link = WIN11DRIVERJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
+			download_link = DRIVERJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
 		when 'audiodriver'
-			download_link = DRIVERJSON['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
+			download_link = DRIVERJSON['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
 		end
 
 		# Raise error if variable doesn't contain link
@@ -170,10 +169,10 @@ def show_update_description
 				notes = BIOSJSON['Result']['Obj'][0]['Files'][0]['Description']
 			when 'chipset'
 				name = 'Chipset'
-				notes = WIN11DRIVERJSON['Result']['Obj'][0]['Files'][0]['Description']
+				notes = DRIVERJSON['Result']['Obj'][0]['Files'][0]['Description']
 			when 'audiodriver'
 				name = 'Audiodriver'
-				notes = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Description']
+				notes = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Description']
 			end
 		end
 	}
