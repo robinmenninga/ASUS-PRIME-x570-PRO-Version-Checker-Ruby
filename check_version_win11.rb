@@ -35,7 +35,7 @@ def get_newest_version(to_check)
 		when 'bios'
 			newest = BIOSJSON['Result']['Obj'][0]['Files'][0]['Version']
 		when 'chipset'
-			newest = DRIVERJSON['Result']['Obj'][0]['Files'][0]['Version']
+			newest = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Version']
 		when 'audiodriver'
 			newest = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Version']
 		end
