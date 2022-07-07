@@ -37,7 +37,7 @@ def get_newest_version(to_check)
 		when 'chipset'
 			newest = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Version']
 		when 'audiodriver'
-			newest = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Version']
+			newest = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Version']
 		end
 
 		# Raise error if version from website somehow doesn't contain a number
@@ -58,9 +58,9 @@ def is_release?(to_check)
 		when 'bios'
 			is_release = BIOSJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
 		when 'chipset'
-			is_release = DRIVERJSON['Result']['Obj'][0]['Files'][0]['IsRelease']
-		when 'audiodriver'
 			is_release = DRIVERJSON['Result']['Obj'][1]['Files'][0]['IsRelease']
+		when 'audiodriver'
+			is_release = DRIVERJSON['Result']['Obj'][2]['Files'][0]['IsRelease']
 		end
 
 		# Raise error if version from website somehow doesn't contain a number (should be either 0 or 1)
@@ -125,9 +125,9 @@ def get_download_link(item)
 		when 'bios'
 			download_link = BIOSJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
 		when 'chipset'
-			download_link = DRIVERJSON['Result']['Obj'][0]['Files'][0]['DownloadUrl']['Global']
-		when 'audiodriver'
 			download_link = DRIVERJSON['Result']['Obj'][1]['Files'][0]['DownloadUrl']['Global']
+		when 'audiodriver'
+			download_link = DRIVERJSON['Result']['Obj'][2]['Files'][0]['DownloadUrl']['Global']
 		end
 
 		# Raise error if variable doesn't contain link
@@ -169,10 +169,10 @@ def show_update_description
 				notes = BIOSJSON['Result']['Obj'][0]['Files'][0]['Description']
 			when 'chipset'
 				name = 'Chipset'
-				notes = DRIVERJSON['Result']['Obj'][0]['Files'][0]['Description']
+				notes = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Description']
 			when 'audiodriver'
 				name = 'Audiodriver'
-				notes = DRIVERJSON['Result']['Obj'][1]['Files'][0]['Description']
+				notes = DRIVERJSON['Result']['Obj'][2]['Files'][0]['Description']
 			end
 		end
 	}
