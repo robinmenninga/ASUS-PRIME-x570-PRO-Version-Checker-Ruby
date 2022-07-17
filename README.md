@@ -1,3 +1,5 @@
+# This repo has been archived, any new additions to this script will be added to this repo instead: [NEW REPO](https://github.com/robinmenninga/ASUS-PRIME-x570-PRO-Version-Checker-Python)
+
 # ASUS PRIME x570 PRO Version Checker
 A script that checks if you have the latest PRIME x570-PRO bios, audio driver and chipset, made in ruby. There's a main script made for Windows 10, a script for Windows 11 and a script for Linux. The difference between the windows 10 and 11 versions is the chipset driver check and audio driver check. The linux version only checks the bios version.
 
